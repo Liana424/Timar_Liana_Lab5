@@ -47,23 +47,20 @@ namespace Timar_Liana_Lab5
             inventoryVSource = ((System.Windows.Data.CollectionViewSource)(this.FindResource("inventoryViewSource")));
             inventoryVSource.Source = ctx.Inventories.Local;
 
-
-
             customerVSource = ((System.Windows.Data.CollectionViewSource)(this.FindResource("customerViewSource")));
             customerVSource.Source = ctx.Customers.Local;
 
-            customerOrdersVSource =
-            ((System.Windows.Data.CollectionViewSource)(this.FindResource("customerOrdersViewSource")));
+            customerOrdersVSource = ((System.Windows.Data.CollectionViewSource)(this.FindResource("customerOrdersViewSource")));
 
-            
+            //customerOrdersVSource.Source = ctx.Orders.Local;
             ctx.Customers.Load();
             ctx.Orders.Load();
             ctx.Inventories.Load();
             cmbCustomers.ItemsSource = ctx.Customers.Local;
-           
+            //cmbCustomers.DisplayMemberPath = "FirstName";
             cmbCustomers.SelectedValuePath = "CustId";
             cmbInventory.ItemsSource = ctx.Inventories.Local;
-            
+            //cmbInventory.DisplayMemberPath = "Make";
             cmbInventory.SelectedValuePath = "CarId";
             BindDataGrid();
         }
@@ -72,11 +69,20 @@ namespace Timar_Liana_Lab5
         private void btnAdd_Click(object sender, RoutedEventArgs e)
         {
             action = ActionState.New;
+            BindingOperations.ClearBinding(firstNameTextBox, TextBox.TextProperty);
+            BindingOperations.ClearBinding(lastNameTextBox, TextBox.TextProperty);
+            SetValidationBinding();
+
         }
+
         private void btnEdit_Click(object sender, RoutedEventArgs e)
         {
+            BindingOperations.ClearBinding(firstNameTextBox, TextBox.TextProperty);
+            BindingOperations.ClearBinding(lastNameTextBox, TextBox.TextProperty);
+            SetValidationBinding();
             action = ActionState.Edit;
         }
+
         private void btnDelete_Click(object sender, RoutedEventArgs e)
         {
             action = ActionState.Delete;
@@ -96,33 +102,32 @@ namespace Timar_Liana_Lab5
             {
                 try
                 {
-                   
+                    //instantiem Customer entity
                     customer = new Customer()
                     {
                         FirstName = firstNameTextBox.Text.Trim(),
                         LastName = lastNameTextBox.Text.Trim()
                     };
-                    
+                    //adaugam entitatea nou creata in context
                     ctx.Customers.Add(customer);
                     customerVSource.View.Refresh();
-                    
+                    //salvam modificarile
                     ctx.SaveChanges();
                 }
-                
+                //using System.Data;
                 catch (DataException ex)
                 {
                     MessageBox.Show(ex.Message);
                 }
             }
-            else
-           if (action == ActionState.Edit)
+            else if (action == ActionState.Edit)
             {
                 try
                 {
                     customer = (Customer)customerDataGrid.SelectedItem;
                     customer.FirstName = firstNameTextBox.Text.Trim();
                     customer.LastName = lastNameTextBox.Text.Trim();
-                    
+                    //salvam modificarile
                     ctx.SaveChanges();
                 }
                 catch (DataException ex)
@@ -148,11 +153,11 @@ namespace Timar_Liana_Lab5
         }
         private void btnNext1_Click(object sender, RoutedEventArgs e)
         {
-            customerVSource.View.MoveCurrentToNext();
+            inventoryVSource.View.MoveCurrentToNext();
         }
         private void btnPrev1_Click(object sender, RoutedEventArgs e)
         {
-            customerVSource.View.MoveCurrentToPrevious();
+            inventoryVSource.View.MoveCurrentToPrevious();
         }
         private void SaveInventory()
         {
@@ -161,33 +166,32 @@ namespace Timar_Liana_Lab5
             {
                 try
                 {
-                    
+                    //instantiem Customer entity
                     inventory = new Inventory()
                     {
                         Color = colorTextBox.Text.Trim(),
                         Make = makeTextBox.Text.Trim()
                     };
-                    
+                    //adaugam entitatea nou creata in context
                     ctx.Inventories.Add(inventory);
                     inventoryVSource.View.Refresh();
-                    
+                    //salvam modificarile
                     ctx.SaveChanges();
                 }
-                
+                //using System.Data;
                 catch (DataException ex)
                 {
                     MessageBox.Show(ex.Message);
                 }
             }
-            else
-           if (action == ActionState.Edit)
+            else if (action == ActionState.Edit)
             {
                 try
                 {
-                    inventory = (Inventory)customerDataGrid.SelectedItem;
+                    inventory = (Inventory)inventoryDataGrid.SelectedItem;
                     inventory.Color = colorTextBox.Text.Trim();
                     inventory.Make = makeTextBox.Text.Trim();
-                    
+                    //salvam modificarile
                     ctx.SaveChanges();
                 }
                 catch (DataException ex)
@@ -222,6 +226,7 @@ namespace Timar_Liana_Lab5
                     B.IsEnabled = false;
             }
             gbActions.IsEnabled = true;
+
         }
         private void ReInitialize()
         {
@@ -254,6 +259,7 @@ namespace Timar_Liana_Lab5
                     break;
             }
             ReInitialize();
+
         }
         private void SaveOrders()
         {
@@ -264,16 +270,16 @@ namespace Timar_Liana_Lab5
                 {
                     Customer customer = (Customer)cmbCustomers.SelectedItem;
                     Inventory inventory = (Inventory)cmbInventory.SelectedItem;
-                    
+                    //instantiem Order entity
                     order = new Order()
                     {
 
                         CustId = customer.CustId,
                         CarId = inventory.CarId
                     };
-                    
+                    //adaugam entitatea nou creata in context
                     ctx.Orders.Add(order);
-                    
+                    //salvam modificarile
                     ctx.SaveChanges();
                     BindDataGrid();
                 }
@@ -282,8 +288,7 @@ namespace Timar_Liana_Lab5
                     MessageBox.Show(ex.Message);
                 }
             }
-            else
-if (action == ActionState.Edit)
+            else if (action == ActionState.Edit)
             {
                 dynamic selectedOrder = ordersDataGrid.SelectedItem;
                 try
@@ -294,7 +299,7 @@ if (action == ActionState.Edit)
                     {
                         editedOrder.CustId = Int32.Parse(cmbCustomers.SelectedValue.ToString());
                         editedOrder.CarId = Convert.ToInt32(cmbInventory.SelectedValue.ToString());
-                        
+                        //salvam modificarile
                         ctx.SaveChanges();
                     }
                 }
@@ -346,8 +351,31 @@ if (action == ActionState.Edit)
                              };
             customerOrdersVSource.Source = queryOrder.ToList();
         }
+        private void SetValidationBinding()
+        {
+            Binding firstNameValidationBinding = new Binding();
+            firstNameValidationBinding.Source = customerVSource;
+            firstNameValidationBinding.Path = new PropertyPath("FirstName");
+            firstNameValidationBinding.NotifyOnValidationError = true;
+            firstNameValidationBinding.Mode = BindingMode.TwoWay;
+            firstNameValidationBinding.UpdateSourceTrigger =
+           UpdateSourceTrigger.PropertyChanged;
+            //string required
+            firstNameValidationBinding.ValidationRules.Add(new StringNotEmpty());
+            firstNameTextBox.SetBinding(TextBox.TextProperty, firstNameValidationBinding);
+            Binding lastNameValidationBinding = new Binding();
+            lastNameValidationBinding.Source = customerVSource;
+            lastNameValidationBinding.Path = new PropertyPath("LastName");
+            lastNameValidationBinding.NotifyOnValidationError = true;
+            lastNameValidationBinding.Mode = BindingMode.TwoWay;
+            lastNameValidationBinding.UpdateSourceTrigger =
+           UpdateSourceTrigger.PropertyChanged;
+            //string min length validator
+            lastNameValidationBinding.ValidationRules.Add(new StringMinLengthValidator());
+            lastNameTextBox.SetBinding(TextBox.TextProperty, lastNameValidationBinding);
+            //setare binding nou
+        }
 
 
     }
-
 }
